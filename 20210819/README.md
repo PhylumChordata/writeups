@@ -58,6 +58,8 @@ Now - generally, the compatibility tab doesn't say a whole lot about what fixes
 are being leveraged - and that's what the application compatibility toolkit
 is for.
 
+# Compatibility Administrator
+
 https://docs.microsoft.com/en-us/archive/blogs/yongrhee/download-windows-10-assessment-and-deployment-kit-adk
 
 Microsoft offers a compatibility toolkit that honestly should have been
@@ -95,6 +97,8 @@ we can find which one or more definitively fixes our issue. After doing that,
 we are left with this:
 
 ![ca_03](./assets/ca_03.png)
+
+# EmulateHeap?
 
 So wtf is EmulateHeap doing? To figure that out, we have to look into apphelp
 to see that it points to aclayers and then acgenral which we find the EmulateHeap
@@ -167,6 +171,7 @@ Now, this particular fix involves reimplementing the entirety of Win9x's heap
 management - note for note. One option would be to dig into the binary and
 approximate this functionality.
 
+# A Questionable Approach
 If you aren't shipping a solution and/or are less... *ethically* inclined,
 it should be noted that the 9x heap management code has been a fix practically
 forever, which means it's in the leaked XP source code that has been floating
@@ -213,9 +218,41 @@ In emulateheap_kernel32.h:
 A bit of inline hooking and, you too can be the proud owner of 9x heaps in your
 modern applications!
 
-I've made a public repo of the shim code, minus the 9x heap code which is
-literally lifted from the XP source. Feel free to give it a shot yourself if
-you don't mind using legally/ethically questionable source code.
+I've made a public repo of the shim code, minus the 9x heap code which was
+lifted from the XP source and can be dropped in to overwrite the placeholder
+files.
+Feel free to give it a shot yourself if you don't mind using legally/ethically
+questionable source code.
 
+[9xHeap Public Repo](https://github.com/batteryshark/9xheap_public)
 
-![therepo](https://github.com/batteryshark/9xheap_public)
+# Closing Thoughts
+
+Sort of a long way to get to a point, but I find the whole idea that modern
+Windows has such an extensive collection of shims that are silently loaded as
+a part of process init somewhat concerning. Most of the time, shims are
+automatically and silently loaded without any user intervention or notification.
+
+It's such a critical and prevalent part of the OS, and so much core functionality
+having to do with WOW64 and other layers depend on it to operate, it's not hard
+to imagine what would happen if certain fixes were removed... or added.
+
+Fixes such as those that arbitrarily copy registry keys, redirect paths, try to
+shim in order to fix dated DRM (Securom7's Fix), or handle how pointer
+exceptions work may pave the way for a more sophisticated exploit that may have
+been mitigated in the past and resurfaced for the sake of compatibility.
+
+All it takes is a compatibility flag ticked, a registry key made, or similar,
+and apphelp will happily hack up your application and because it's in process
+init, there's not a lot that can really be done to mitigate it if those are set.
+
+Of course, this is a part of what makes application compatibility work on
+Windows and has been for years. But considerably more should be done to
+alert and notify on shim changes and, at the very least, block shims
+from newer applications that don't require them... maybe even get it out of
+the process loader altogether.
+
+Still, it's worth a dive at a later time to see what else the appcompat engine
+has that may be interesting.
+
+Cheers!
