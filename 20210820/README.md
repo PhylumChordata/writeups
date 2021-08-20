@@ -211,9 +211,18 @@ in the order that they are set:
 #include <sys/io.h>
 void ioport_handler(int mysignal, siginfo_t *si, void* arg){    
   ucontext_t *context = (ucontext_t *)arg;    
+  unsigned int eip_val = context->uc_mcontext.gregs[REG_EIP];  
   // ** Do Stuff **
+  if((eip_val & 0xFFFF) == 0xED66){
+    switch(context->uc_mcontext.gregs[REG_EDX] & 0xFFFF){
+        case 0x200:
+            context->uc_mcontext.gregs[REG_EAX] = SomeHandleInput();
+            break;
+    }
+    context->uc_mcontext.gregs[REG_EIP]+=2;
+  }
   // Skip over the instruction that caused the exception:
-  context->uc_mcontext.gregs[REG_EIP]++;
+
 }
 
 void set_handler(){
@@ -246,8 +255,13 @@ without a proper guard.
 #include <Windows.h>
 
 LONG WINAPI ioport_handler(PEXCEPTION_POINTERS pExceptionInfo) {
-  // Don't let Debug Prints Screw Shit up
-  if(pExceptionInfo->ExceptionRecord->ExceptionCode != DBG_PRINTEXCEPTION_C){}
+  // If this isn't what we want, skip it...
+  if(pExceptionInfo->ExceptionRecord->ExceptionCode != EXCEPTION_PRIV_INSTRUCTION) {
+      // Don't let Debug Prints Screw Shit up
+      if(pExceptionInfo->ExceptionRecord->ExceptionCode!= DBG_PRINTEXCEPTION_C){
+      }
+      return EXCEPTION_EXECUTE_HANDLER;
+  }
   // ** Do Stuff **
 
   unsigned int eip_val = *(unsigned int*)pExceptionInfo->ContextRecord->Eip;
