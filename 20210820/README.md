@@ -178,6 +178,7 @@ handling functions can view the context of various registers and current instruc
 to make a decision, handle issues, etc.
 
 ![priv_instruction](./assets/eh01.png)
+
 This is used quite a bit in regular operations, is how user-space debugging is facilitated on
 modern OSes, things like debugprinting, and is widely available. Exception handlers
 can be chained and called in sequence, and they only require that you push
