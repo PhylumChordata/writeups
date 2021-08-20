@@ -219,10 +219,10 @@ void ioport_handler(int mysignal, siginfo_t *si, void* arg){
             context->uc_mcontext.gregs[REG_EAX] = SomeHandleInput();
             break;
     }
+    // Skip over the instruction that caused the exception:
     context->uc_mcontext.gregs[REG_EIP]+=2;
   }
-  // Skip over the instruction that caused the exception:
-
+  
 }
 
 void set_handler(){
