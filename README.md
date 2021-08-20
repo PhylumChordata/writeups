@@ -12,3 +12,4 @@
 ### [2019-07-21] [WOW64 Rant](./20190721)
 ### [2020-05-11] [Pushing the Envelope - Part Deux](./20200511)
 ### [2021-08-19] [Time Travel - Win9x Heaps for the 2020s](./20210819)
+### [2021-08-20] [IOPort Compatibility Patching](./20210820)
